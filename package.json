@@ -1,0 +1,24 @@
+{
+  "name": "pro_post",
+  "version": "1.0.0",
+  "description": "Challenge project for Yashi Media",
+  "main": "index.js",
+  "dependencies": {
+    "babel-core": "^6.17.0",
+    "babel-loader": "^6.2.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/GxDesign/ProPost.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GxDesign/ProPost/issues"
+  },
+  "homepage": "https://github.com/GxDesign/ProPost#readme"
+}
