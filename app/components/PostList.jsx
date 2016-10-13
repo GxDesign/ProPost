@@ -1,4 +1,5 @@
 import React from 'react';
+import TimeAgo from 'react-timeago'
 
 
 class PostList extends React.Component {
@@ -7,13 +8,13 @@ class PostList extends React.Component {
     this.setActivePost = this.setActivePost.bind(this);
   }
 
-  setActivePost(index) {
-    this.props.setActivePost(index);
+  setActivePost(post) {
+    this.props.setActivePost(post.id);
   }
 
   render(){
     const setActivePost = this.setActivePost;
-    const posts = this.props.posts;
+    const {posts, activePost} = this.props;
 
     if (posts.length === 0) {
       return (
@@ -27,7 +28,12 @@ class PostList extends React.Component {
         <ul>
           {posts.map(function(post, i) {
             return (
-              <li onClick={setActivePost.bind(this, post.id)} key={i}>{post.title}</li>
+              <li 
+                className={"postlist-item " + (post.id == activePost.id ? 'active' : '')}
+                onClick={setActivePost.bind(this, post)} key={i}>
+                <span className="postlist-item-title">{post.title}</span>
+                <TimeAgo className="time-ago" date={post.updated_at} minPeriod="60"/>
+                </li>
             );
           })}
         </ul>

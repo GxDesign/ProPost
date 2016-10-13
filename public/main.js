@@ -89,8 +89,8 @@
 			_this.state = {
 				editorOpen: false,
 				savedPosts: [],
-				activePost: { title: "", content: "", id: "" },
-				lastId: 0
+				activePost: { title: "", content: "", id: 1 },
+				lastId: 1
 			};
 	
 			// attempted ES7 autobinding but encountered build errors
@@ -184,6 +184,7 @@
 	
 				if (isDifferent(original, activePost)) {
 					var post = mkCopy(activePost);
+					post.updated_at = new Date();
 	
 					if (activePost.id > lastId) {
 						// is new
@@ -208,17 +209,34 @@
 		}, {
 			key: 'cancel',
 			value: function cancel() {
-				this.setState({ editorOpen: false, activePost: this.getOriginalPost() });
+				var _state2 = this.state;
+				var activePost = _state2.activePost;
+				var savedPosts = _state2.savedPosts;
+				var lastId = _state2.lastId;
+	
+				if (activePost.id > lastId) {
+					this.setState({ editorOpen: false, activePost: savedPosts[0] });
+				} else {
+					this.setState({ editorOpen: false, activePost: this.getOriginalPost() });
+				}
 			}
+	
+			// clearAll() {
+			// 	this.setState({ savedPosts: [] });
+			// 	localstorage.savedPosts = [];
+			// 	this.setState({activePost: {title: 'Create your first post', content: '', id: }});
+			// 	this.openEditor(true);
+			// }
+	
 		}, {
 			key: 'discard',
 			value: function discard() {
 				var _this3 = this;
 	
-				var _state2 = this.state;
-				var activePost = _state2.activePost;
-				var savedPosts = _state2.savedPosts;
-				var lastId = _state2.lastId;
+				var _state3 = this.state;
+				var activePost = _state3.activePost;
+				var savedPosts = _state3.savedPosts;
+				var lastId = _state3.lastId;
 	
 				if (activePost.id > lastId) {
 					this.cancel();
@@ -236,10 +254,10 @@
 		}, {
 			key: 'getOriginalPost',
 			value: function getOriginalPost(id) {
-				var _state3 = this.state;
-				var activePost = _state3.activePost;
-				var savedPosts = _state3.savedPosts;
-				var lastId = _state3.lastId;
+				var _state4 = this.state;
+				var activePost = _state4.activePost;
+				var savedPosts = _state4.savedPosts;
+				var lastId = _state4.lastId;
 	
 				var active_id = id || activePost.id;
 				return getPostById(active_id, savedPosts) || { title: '', content: '', id: lastId + 1 };
@@ -249,10 +267,10 @@
 			value: function render() {
 				var _this4 = this;
 	
-				var _state4 = this.state;
-				var savedPosts = _state4.savedPosts;
-				var activePost = _state4.activePost;
-				var editorOpen = _state4.editorOpen;
+				var _state5 = this.state;
+				var savedPosts = _state5.savedPosts;
+				var activePost = _state5.activePost;
+				var editorOpen = _state5.editorOpen;
 	
 				return (// A la JSX
 					_react2.default.createElement(
@@ -260,42 +278,47 @@
 						{ className: 'row' },
 						_react2.default.createElement(
 							'div',
-							{ className: "sidebar col-md-4 " + (editorOpen ? 'disabled' : 'enabled') },
+							{ className: "sidebar " + (editorOpen ? 'disabled' : 'enabled') },
 							_react2.default.createElement(_PostList2.default, {
 								posts: savedPosts,
+								activePost: activePost,
 								setActivePost: this.setActivePost
 							})
 						),
 						_react2.default.createElement(
 							'div',
-							{ className: 'post-editor col-md-8' },
-							editorOpen ? _react2.default.createElement(_Post2.default, {
-								activePost: activePost,
-								updatePost: this.updatePost,
-								savePost: this.savePost,
-								newPost: this.newPost,
-								discard: this.discard,
-								cancel: this.cancel }) : _react2.default.createElement(
+							{ className: 'post' },
+							_react2.default.createElement(
 								'div',
-								{ className: 'post-actions' },
-								_react2.default.createElement(
-									'button',
-									{ onClick: function onClick() {
-											return _this4.openEditor(true);
-										} },
-									'New post'
+								{ className: 'post-inner' },
+								editorOpen ? _react2.default.createElement(_Post2.default, {
+									activePost: activePost,
+									updatePost: this.updatePost,
+									savePost: this.savePost,
+									newPost: this.newPost,
+									discard: this.discard,
+									cancel: this.cancel }) : _react2.default.createElement(
+									'div',
+									{ className: 'post-actions' },
+									_react2.default.createElement(
+										'button',
+										{ onClick: function onClick() {
+												return _this4.openEditor(true);
+											} },
+										_react2.default.createElement('i', { className: 'fa fa-file-text', 'aria-hidden': 'true' })
+									),
+									_react2.default.createElement(
+										'button',
+										{ onClick: function onClick() {
+												return _this4.openEditor(false);
+											} },
+										_react2.default.createElement('i', { className: 'fa fa-pencil', 'aria-hidden': 'true' })
+									)
 								),
-								_react2.default.createElement(
-									'button',
-									{ onClick: function onClick() {
-											return _this4.openEditor(false);
-										} },
-									'Edit Post'
-								)
-							),
-							_react2.default.createElement(_Preview2.default, {
-								activePost: activePost
-							})
+								_react2.default.createElement(_Preview2.default, {
+									activePost: activePost
+								})
+							)
 						)
 					)
 				);
@@ -22305,44 +22328,43 @@
 	
 	      return _react2.default.createElement(
 	        'div',
-	        { className: 'post' },
+	        { className: 'post-editor' },
 	        _react2.default.createElement('input', {
 	          id: 'title',
 	          type: 'text',
 	          className: 'form-control',
+	          placeholder: 'New Post',
 	          value: activePost.title,
 	          onChange: this.updatePost }),
 	        _react2.default.createElement('textarea', {
 	          id: 'content',
 	          className: 'form-control',
+	          placeholder: 'Add your Markdown here...',
 	          value: activePost.content,
 	          onChange: this.updatePost }),
 	        _react2.default.createElement(
 	          'div',
-	          null,
-	          'id: ',
-	          activePost.id
-	        ),
-	        _react2.default.createElement(
-	          'button',
-	          {
-	            className: 'btn-primary',
-	            onClick: savePost },
-	          'Save'
-	        ),
-	        _react2.default.createElement(
-	          'button',
-	          {
-	            className: 'btn-danger',
-	            onClick: cancel.bind(activePost.id) },
-	          'Cancel'
-	        ),
-	        _react2.default.createElement(
-	          'button',
-	          {
-	            className: 'btn-danger',
-	            onClick: discard.bind(activePost.id) },
-	          'Discard'
+	          { className: 'post-editor-actions' },
+	          _react2.default.createElement(
+	            'button',
+	            {
+	              className: 'btn-success',
+	              onClick: savePost },
+	            'Save'
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            {
+	              onClick: cancel.bind(activePost.id) },
+	            'Cancel'
+	          ),
+	          _react2.default.createElement(
+	            'button',
+	            {
+	              className: 'btn-danger',
+	              onClick: discard.bind(activePost.id) },
+	            'Discard'
+	          )
 	        )
 	      );
 	    }
@@ -22403,18 +22425,14 @@
 	      var activePost = this.props.activePost;
 	      return _react2.default.createElement(
 	        'div',
-	        { className: 'preview' },
+	        { className: 'post-preview' },
 	        _react2.default.createElement(
 	          'h1',
-	          null,
-	          'Preview Below'
-	        ),
-	        _react2.default.createElement(
-	          'h1',
-	          null,
+	          { className: 'post-title' },
 	          activePost.title
 	        ),
 	        _react2.default.createElement(_reactMarkdown2.default, {
+	          className: 'post-content',
 	          source: activePost.content,
 	          escapeHtml: true
 	        })
@@ -30532,7 +30550,7 @@
   \*************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -30543,6 +30561,10 @@
 	var _react = __webpack_require__(/*! react */ 1);
 	
 	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactTimeago = __webpack_require__(/*! react-timeago */ 201);
+	
+	var _reactTimeago2 = _interopRequireDefault(_reactTimeago);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -30565,34 +30587,44 @@
 	  }
 	
 	  _createClass(PostList, [{
-	    key: "setActivePost",
-	    value: function setActivePost(index) {
-	      this.props.setActivePost(index);
+	    key: 'setActivePost',
+	    value: function setActivePost(post) {
+	      this.props.setActivePost(post.id);
 	    }
 	  }, {
-	    key: "render",
+	    key: 'render',
 	    value: function render() {
 	      var setActivePost = this.setActivePost;
-	      var posts = this.props.posts;
+	      var _props = this.props;
+	      var posts = _props.posts;
+	      var activePost = _props.activePost;
+	
 	
 	      if (posts.length === 0) {
 	        return _react2.default.createElement(
-	          "div",
-	          { className: "post-list empty" },
-	          "There are no saved posts"
+	          'div',
+	          { className: 'post-list empty' },
+	          'There are no saved posts'
 	        );
 	      }
 	      return _react2.default.createElement(
-	        "div",
-	        { className: "post-list" },
+	        'div',
+	        { className: 'post-list' },
 	        _react2.default.createElement(
-	          "ul",
+	          'ul',
 	          null,
 	          posts.map(function (post, i) {
 	            return _react2.default.createElement(
-	              "li",
-	              { onClick: setActivePost.bind(this, post.id), key: i },
-	              post.title
+	              'li',
+	              {
+	                className: "postlist-item " + (post.id == activePost.id ? 'active' : ''),
+	                onClick: setActivePost.bind(this, post), key: i },
+	              _react2.default.createElement(
+	                'span',
+	                { className: 'postlist-item-title' },
+	                post.title
+	              ),
+	              _react2.default.createElement(_reactTimeago2.default, { className: 'time-ago', date: post.updated_at, minPeriod: '60' })
 	            );
 	          })
 	        )
@@ -30604,6 +30636,172 @@
 	}(_react2.default.Component);
 	
 	exports.default = PostList;
+
+/***/ },
+/* 201 */
+/*!**************************************!*\
+  !*** ./~/react-timeago/lib/index.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _react = __webpack_require__(/*! react */ 1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	// Just some simple constants for readability
+	var MINUTE = 60;
+	var HOUR = MINUTE * 60;
+	var DAY = HOUR * 24;
+	var WEEK = DAY * 7;
+	var MONTH = DAY * 30;
+	var YEAR = DAY * 365;
+	
+	var TimeAgo = function (_Component) {
+	  _inherits(TimeAgo, _Component);
+	
+	  function TimeAgo() {
+	    var _ref;
+	
+	    var _temp, _this, _ret;
+	
+	    _classCallCheck(this, TimeAgo);
+	
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	      args[_key] = arguments[_key];
+	    }
+	
+	    return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = TimeAgo.__proto__ || Object.getPrototypeOf(TimeAgo)).call.apply(_ref, [this].concat(args))), _this), _this.isStillMounted = false, _this.tick = function (refresh) {
+	      if (!_this.isStillMounted || !_this.props.live) {
+	        return;
+	      }
+	
+	      var then = new Date(_this.props.date).valueOf();
+	      var now = Date.now();
+	      var seconds = Math.round(Math.abs(now - then) / 1000);
+	
+	      var unboundPeriod = seconds < MINUTE ? 1000 : seconds < HOUR ? 1000 * MINUTE : seconds < DAY ? 1000 * HOUR : 0;
+	      var period = Math.min(Math.max(unboundPeriod, _this.props.minPeriod * 1000), _this.props.maxPeriod * 1000);
+	
+	      if (period) {
+	        _this.timeoutId = setTimeout(_this.tick, period);
+	      }
+	
+	      if (!refresh) {
+	        _this.forceUpdate();
+	      }
+	    }, _temp), _possibleConstructorReturn(_this, _ret);
+	  }
+	
+	  _createClass(TimeAgo, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.isStillMounted = true;
+	      if (this.props.live) {
+	        this.tick(true);
+	      }
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate(lastProps) {
+	      if (this.props.live !== lastProps.live || this.props.date !== lastProps.date) {
+	        if (!this.props.live && this.timeoutId) {
+	          clearTimeout(this.timeoutId);
+	        }
+	        this.tick();
+	      }
+	    }
+	  }, {
+	    key: 'componentWillUnmount',
+	    value: function componentWillUnmount() {
+	      this.isStillMounted = false;
+	      if (this.timeoutId) {
+	        clearTimeout(this.timeoutId);
+	        this.timeoutId = undefined;
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      /* eslint-disable no-unused-vars */
+	      var _props = this.props;
+	      var date = _props.date;
+	      var formatter = _props.formatter;
+	      var Komponent = _props.component;
+	      var live = _props.live;
+	      var minPeriod = _props.minPeriod;
+	      var maxPeriod = _props.maxPeriod;
+	      var title = _props.title;
+	
+	      var passDownProps = _objectWithoutProperties(_props, ['date', 'formatter', 'component', 'live', 'minPeriod', 'maxPeriod', 'title']);
+	      /* eslint-enable no-unused-vars */
+	
+	
+	      var then = new Date(date).valueOf();
+	      var now = Date.now();
+	      var seconds = Math.round(Math.abs(now - then) / 1000);
+	      var suffix = then < now ? 'ago' : 'from now';
+	
+	      var _ref2 = seconds < MINUTE ? [Math.round(seconds), 'second'] : seconds < HOUR ? [Math.round(seconds / MINUTE), 'minute'] : seconds < DAY ? [Math.round(seconds / HOUR), 'hour'] : seconds < WEEK ? [Math.round(seconds / DAY), 'day'] : seconds < MONTH ? [Math.round(seconds / WEEK), 'week'] : seconds < YEAR ? [Math.round(seconds / MONTH), 'month'] : [Math.round(seconds / YEAR), 'year'];
+	
+	      var _ref3 = _slicedToArray(_ref2, 2);
+	
+	      var value = _ref3[0];
+	      var unit = _ref3[1];
+	
+	
+	      var passDownTitle = typeof title === 'undefined' ? typeof date === 'string' ? date : new Date(date).toISOString().substr(0, 16).replace('T', ' ') : title;
+	
+	      if (Komponent === 'time') {
+	        passDownProps.dateTime = new Date(date).toISOString();
+	      }
+	
+	      return _react2.default.createElement(
+	        Komponent,
+	        _extends({}, passDownProps, { title: passDownTitle }),
+	        this.props.formatter(value, unit, suffix, then)
+	      );
+	    }
+	  }]);
+	
+	  return TimeAgo;
+	}(_react.Component);
+	
+	TimeAgo.displayName = 'TimeAgo';
+	TimeAgo.defaultProps = {
+	  live: true,
+	  component: 'time',
+	  minPeriod: 0,
+	  maxPeriod: Infinity,
+	  formatter: function formatter(value, unit, suffix) {
+	    if (value !== 1) {
+	      unit += 's';
+	    }
+	    return value + ' ' + unit + ' ' + suffix;
+	  }
+	};
+	exports.default = TimeAgo;
 
 /***/ }
 /******/ ]);

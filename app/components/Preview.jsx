@@ -5,14 +5,14 @@ import Markdown from 'react-markdown';
 
 
 class Preview extends React.Component {
-
+  
   render(props) {
     const activePost = this.props.activePost;
     return (
-      <div className="preview">
-        <h1>Preview Below</h1>
-        <h1>{activePost.title}</h1>
+      <div className="post-preview">
+        <h1 className="post-title">{activePost.title}</h1>
         <Markdown
+          className="post-content"
           source={activePost.content}
           escapeHtml
         />

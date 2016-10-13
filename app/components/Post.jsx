@@ -16,36 +16,39 @@ class Post extends React.Component {
   render() {
     const {savePost, activePost, cancel, discard} = this.props;
     return (
-      <div className="post">
-        <input
-          id="title"
-          type="text"
-          className="form-control"
-          value={activePost.title}
-          onChange={this.updatePost} />
-        <textarea
-          id="content"
-          className="form-control"
-          value={activePost.content}
-          onChange={this.updatePost}>
-        </textarea>
-        <div>id: {activePost.id}</div>
-        <button 
-          className="btn-primary" 
-          onClick={savePost} >
-          Save
-          </button>
-        <button 
-          className="btn-danger" 
-          onClick={cancel.bind(activePost.id)} >
-          Cancel 
-          </button>
-        <button 
-          className="btn-danger" 
-          onClick={discard.bind(activePost.id)} >
-          Discard 
-          </button>
-        
+        <div className="post-editor">
+          <input
+            id="title"
+            type="text"
+            className="form-control"
+            placeholder="New Post"
+            value={activePost.title}
+            onChange={this.updatePost} />
+          <textarea
+            id="content"
+            className="form-control"
+            placeholder="Add your Markdown here..."
+            value={activePost.content}
+            onChange={this.updatePost}>
+          </textarea>
+          {/* <div>id: {activePost.id}</div> */}
+          <div className="post-editor-actions">
+            <button 
+              className="btn-success" 
+              onClick={savePost} >
+              Save
+              </button>
+            <button 
+              onClick={cancel.bind(activePost.id)} >
+              Cancel 
+              </button>
+            <button 
+              className="btn-danger" 
+              onClick={discard.bind(activePost.id)} >
+              Discard 
+              </button>
+            </div>
+          
       </div>
     );
   }

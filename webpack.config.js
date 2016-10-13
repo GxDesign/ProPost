@@ -20,11 +20,7 @@ var config = {
     	{ 
     		test: /\.json?/, 
 	    	loaders: ["json"]
-    	},
-    	{
-            test: /\.scss$/,
-            loaders: ['style', 'css', 'sass']
-        }
+    	}
 	  ]
 	}
 };

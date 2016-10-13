@@ -10,8 +10,8 @@ class Application extends React.Component { // A la ES6
 		this.state = {
 			editorOpen: false,
 			savedPosts: [],
-			activePost: {title: "", content: "", id: ""},
-			lastId: 0
+			activePost: {title: "", content: "", id: 1},
+			lastId: 1
 		};
 
 		// attempted ES7 autobinding but encountered build errors
@@ -67,6 +67,7 @@ class Application extends React.Component { // A la ES6
 
     	if(isDifferent(original, activePost)){  
 	    	let post = mkCopy(activePost);
+	    	post.updated_at = new Date();
             
     		if(activePost.id > lastId) { // is new
 				this.setState({lastId: lastId + 1});
@@ -90,8 +91,20 @@ class Application extends React.Component { // A la ES6
     }
 
     cancel() {
-    	this.setState({editorOpen: false, activePost: this.getOriginalPost()});
+    	let {activePost, savedPosts, lastId} = this.state;
+    	if(activePost.id > lastId) {
+    		this.setState({editorOpen: false, activePost: savedPosts[0]})
+    	} else {
+    		this.setState({editorOpen: false, activePost: this.getOriginalPost()})
+    	}
 	}
+
+	// clearAll() {
+	// 	this.setState({ savedPosts: [] });
+	// 	localstorage.savedPosts = [];
+	// 	this.setState({activePost: {title: 'Create your first post', content: '', id: }});
+	// 	this.openEditor(true);
+	// }
 
 	discard() {
 		const {activePost, savedPosts, lastId} = this.state;
@@ -119,34 +132,38 @@ class Application extends React.Component { // A la ES6
 		const {savedPosts, activePost, editorOpen} = this.state;
 	    return ( // A la JSX
 	    	<div className="row"> 
-	    		<div className={"sidebar col-md-4 " + (editorOpen ? 'disabled' : 'enabled')}>
+	    		<div className={"sidebar " + (editorOpen ? 'disabled' : 'enabled')}>
 	    			<PostList 
 	    				posts={savedPosts} 
+	    				activePost={activePost} 
 	    				setActivePost={this.setActivePost}
 	    				/>
 	    		</div>
-	    		<div className="post-editor col-md-8">
-			    	{editorOpen ? 
-			    		<Post 
-				    		activePost={activePost} 
-				    		updatePost={this.updatePost} 
-				    		savePost={this.savePost} 
-				    		newPost={this.newPost}
-				    		discard={this.discard}
-				    		cancel={this.cancel} /> 
-			    		:
-			    		<div className="post-actions">
-				    		<button onClick={()=> this.openEditor(true)} >
-					    		New post
-				    		</button>
-				    		<button onClick={()=> this.openEditor(false)} >
-					    		Edit Post
-				    		</button>
-				    	</div>
-			    	}
-			    	<Preview 
-			    		activePost={activePost}
-			    		/>
+	    		<div className="post">
+	    		    <div className="post-inner">
+				    	{editorOpen ? 
+				    		<Post 
+					    		activePost={activePost} 
+					    		updatePost={this.updatePost} 
+					    		savePost={this.savePost} 
+					    		newPost={this.newPost}
+					    		discard={this.discard}
+					    		cancel={this.cancel} /> 
+				    		:
+				    		<div className="post-actions">
+					    		<button onClick={()=> this.openEditor(true)} >
+						    		<i className="fa fa-file-text" aria-hidden="true"></i>
+					    		</button>
+					    		<button onClick={()=> this.openEditor(false)} >
+						    		<i className="fa fa-pencil" aria-hidden="true"></i>
+					    		</button>
+					    	</div>
+				    	}
+				    	
+				    	<Preview 
+				    		activePost={activePost}
+				    		/>
+				    </div>
 		    	</div>
 	    	</div>
 	    )

@@ -1,24 +1,158 @@
-.disabled {
-	pointer-events: none;
-}
-
-.post-list ul {
-	list-style: none;
-}
-
-.post-list li {
-	color: #fff;
-	padding:40px 15px;
-}
-
 #app {
 	min-height: 100vh;
 }
 
+body { margin: 0; }
+
+
+* {
+	font-family: 'EB Garamond', serif;
+}
+
+h1, h2, h3, li, button {
+	font-family: 'Quicksand', sans-serif;
+}
+
+.row { 
+    display: flex; 
+}
+
 .sidebar { 
-	background: gray; 
+	background: #dadada;
+	width: 30%;
+	min-width: 350px;
+}
+
+.sidebar, .post {
+	overflow: scroll;
+	height: 100vh;
+	max-height: 100vh;
+	box-sizing: border-box;
 }
 
 .sidebar, .sidebar > .row:first-child {
 	height: 100%;
+}
+
+.disabled {
+	pointer-events: none;
+}
+
+.post {
+	width: 70%;
+	padding: 30px;
+	background: url(http://subtlepatterns2015.subtlepatterns.netdna-cdn.com/patterns/geometry2.png);
+}
+
+.post-list ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.post-list li {
+	color: #603d60;
+	padding:20px 40px;
+	font-size: 1.2em;
+	border-bottom: 1px solid #ccc;
+}
+
+.post-list li:hover {
+	background:  #e6e6e6;
+	cursor: pointer;
+}
+
+.post-list li.active {
+	color: #19aacb;
+	background: #f7f7f7;
+	border-right: 6px solid #19aacb;
+}
+
+.postlist-item-title {
+    width: 185px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.time-ago {
+	font-size: .7em;
+    opacity: 0.4;
+    float: right;
+    margin-top: 5px;
+}
+
+.post-inner {
+	max-width: 900px;
+	box-sizing: border-box;
+	margin: 0 auto;
+	height: 100%;
+    background: #fff;
+    border-radius: 15px;
+    padding: 45px 60px;
+}
+
+.post-title {
+	border-bottom: 2px solid #19aacb;
+    text-align: center;
+    font-size: 3em;
+}
+
+.post-actions button {
+	height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    border: none;
+    font-size: 16px;
+    line-height: 1;
+    text-align: center;
+    color: #fff;
+    margin-left: 25px;
+}
+
+.post-actions, .post-editor-actions {
+	text-align: right;
+}
+
+.post-actions button:hover {
+	background: #19aacb;
+	cursor: pointer;
+}
+
+.post-editor input,
+.post-editor textarea {
+	width: 100%;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 1.3em;
+    border: 2px solid #19aacb;
+}
+
+.post-editor textarea {
+    min-height: 100px;
+    margin-top: 20px;
+}
+.post-editor-actions {
+	margin-top: 15px;
+}
+.post-editor-actions button {
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 1.2em;
+    border: 2px solid #19aacb;
+    margin-left: 15px;
+    background: none;
+}  
+
+.post-editor-actions button.btn-success {
+    background: #06da7b;
+    border-color: #06da7b;
+    color: #fff;
+}
+
+.post-editor-actions button.btn-danger {
+    background: #f96161;
+    border-color: #f96161;
+    color: #fff;
 }
