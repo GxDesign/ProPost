@@ -43,21 +43,11 @@ class Application extends React.Component { // A la ES6
 		}
 	}
 
-    updatePost(field, value) {
-    	var updated = this.state.activePost;
-    	updated[field] = value;
-    	this.setState({activePost: updated});
-    }
-
     setActivePost(id) {
     	let savedPosts = this.state.savedPosts.slice();
     	let index = savedPosts.findIndex(p => p.id === id);
     	let activePost =  mkCopy(savedPosts[index]);
     	this.setState({activePost: activePost});
-    }
-
-    toggleSidebar() {
-    	this.setState({sidebarOpen: !this.state.sidebarOpen})
     }
 
     openEditor(isNew) {
@@ -67,6 +57,18 @@ class Application extends React.Component { // A la ES6
 	    }
     	this.setState({editorOpen: true})
     }
+
+    updatePost(field, value) {
+    	var updated = this.state.activePost;
+    	updated[field] = value;
+    	this.setState({activePost: updated});
+    }
+
+
+    toggleSidebar() {
+    	this.setState({sidebarOpen: !this.state.sidebarOpen})
+    }
+
 
     duplicatePost() {
     	let {activePost, lastId} = this.state;
@@ -78,10 +80,26 @@ class Application extends React.Component { // A la ES6
 	    });
     }
 
+
+	removePost(id) {
+		const {activePost, savedPosts, lastId} = this.state;
+        if(id > lastId) {
+			this.cancel();
+		} else {
+			// copy list, find post and remove it, update list
+			let newSavedPosts = mkCopy(savedPosts);
+	        let index = newSavedPosts.findIndex(p => p.id === id);
+	        newSavedPosts.splice(index, 1);
+			this.updatePostList(newSavedPosts);
+			this.setState({editorOpen: false})
+			return newSavedPosts;
+		}
+	}
+
     savePost(open_editor) {
     	let {activePost, savedPosts, lastId} = this.state;
     	let newSavedPosts = mkCopy(savedPosts); // instead of slice() for consistency
-    	let original = getPostById(activePost.id, newSavedPosts);
+    	let original = savedPosts.findIndex(p => p.id === activePost.id);
 
     	if(isDifferent(original, activePost)){  
 	    	let post = mkCopy(activePost);
@@ -104,10 +122,13 @@ class Application extends React.Component { // A la ES6
 
     cancel() {
     	let {activePost, savedPosts, lastId} = this.state;
+    	let index = savedPosts.findIndex(p => p.id === activePost.id);
+
     	if(activePost.id > lastId) {
     		this.setState({editorOpen: false, activePost: savedPosts[0]})
     	} else {
-    		this.setState({editorOpen: false, activePost: getPostById(activePost.id, mkCopy(savedPosts))})
+    		// return to original
+    		this.setState({editorOpen: false, activePost: mkCopy(savedPosts[index])})
     	}
 	}
 
@@ -120,35 +141,12 @@ class Application extends React.Component { // A la ES6
 		});
 	}
 
-	// clearAll() {
-	// 	this.setState({ savedPosts: [] });
-	// 	localstorage.savedPosts = [];
-	// 	this.setState({activePost: {title: 'Create your first post', content: '', id: 1, lastId: 0}});
-	// 	this.openEditor(true);
-	// }
-
-	removePost(id) {
-		const {activePost, savedPosts, lastId} = this.state;
-        if(id > lastId) {
-			this.cancel();
-		} else {
-			// copy list, find post and remove it, update list
-			let newSavedPosts = mkCopy(savedPosts);
-	        let post = getPostById(id, newSavedPosts);
-	        let index = newSavedPosts.indexOf(post);
-	        newSavedPosts.splice(index, 1);
-			this.updatePostList(newSavedPosts);
-			this.setState({editorOpen: false})
-			return newSavedPosts;
-		}
-	}
-
 
 
 	render(){
-		const {savedPosts, activePost, editorOpen, sidebarOpen} = this.state;
+		const {savedPosts, activePost, editorOpen, sidebarOpen, lastId} = this.state;
 	    return ( // A la JSX
-	    	<div className={"row " + (sidebarOpen ? 'sidebar-open' : 'sidebar-closed')}> 
+	    	<div className={"main " + (sidebarOpen ? 'sidebar-open' : 'sidebar-closed')}> 
 	    		<div className={"sidebar " + (editorOpen ? 'disabled' : 'enabled')}>
 	    			<PostList 
 	    				posts={savedPosts} 
@@ -164,6 +162,7 @@ class Application extends React.Component { // A la ES6
 				    		updatePost={this.updatePost} 
 				    		savePost={this.savePost} 
 				    		newPost={this.newPost}
+				    		lastId={lastId}
 				    		removePost={this.removePost}
 				    		cancel={this.cancel} /> 
 			    		:

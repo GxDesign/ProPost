@@ -14,7 +14,7 @@ class Post extends React.Component {
   }
 
   render() {
-    const {savePost, activePost, cancel, removePost} = this.props;
+    const {savePost, activePost, cancel, removePost, lastId} = this.props;
     return (
         <div className="post-editor">
           <input
@@ -39,12 +39,12 @@ class Post extends React.Component {
               Save
               </button>
             <button 
-              onClick={cancel.bind(this, activePost.id)} >
+              onClick={cancel} >
               Cancel 
               </button>
             <button 
-              className="btn-danger" 
-              onClick={removePost.bind(this, activePost.id)} >
+              className={"btn-danger " + (activePost.id > lastId ? 'disabled': '')}
+              onClick={()=> removePost(activePost.id)} >
               Discard 
               </button>
             </div>

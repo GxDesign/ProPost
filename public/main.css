@@ -16,11 +16,12 @@ h1, h2, h3, li, button, .postlist-item-title {
 	font-family: 'Quicksand', sans-serif;
 }
 
-.row { 
+.main { 
     width: 100%;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
+    background: #000;
 }
 
 .sidebar { 
@@ -39,12 +40,16 @@ h1, h2, h3, li, button, .postlist-item-title {
 	box-sizing: border-box;
 }
 
-.sidebar, .sidebar > .row:first-child {
+.sidebar, .sidebar > .main:first-child {
 	height: 100%;
 }
 
 .disabled {
 	pointer-events: none;
+}
+
+.sidebar.disabled {
+	opacity: 0.5;
 }
 
 .post {
@@ -185,6 +190,10 @@ h1, h2, h3, li, button, .postlist-item-title {
 
 .post-editor-actions {
 	text-align: right;
+}
+
+.post-editor-actions button.disabled {
+	display: none;
 }
 
 .post-actions button:hover, .post-actions button.active {

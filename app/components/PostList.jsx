@@ -32,7 +32,7 @@ class PostList extends React.Component {
                 className={"postlist-item " + (post.id == activePost.id ? 'active' : '')}
                 onClick={setActivePost.bind(this, post)} key={i}>
                 <span className="postlist-item-title">{post.title}</span>
-                <button onClick={removePost.bind(this, post.id)}>
+                <button onClick={() => removePost(post.id)}>
                   <i className="fa fa-close" aria-hidden="true"></i>
                 </button>
                 <TimeAgo className="time-ago" date={post.updated_at} minPeriod="60"/>
