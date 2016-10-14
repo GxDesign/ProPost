@@ -99,7 +99,7 @@ class Application extends React.Component { // A la ES6
     savePost(open_editor) {
     	let {activePost, savedPosts, lastId} = this.state;
     	let newSavedPosts = mkCopy(savedPosts); // instead of slice() for consistency
-    	let original = savedPosts.findIndex(p => p.id === activePost.id);
+    	let original = getPostById(activePost.id, savedPosts);
 
     	if(isDifferent(original, activePost)){  
 	    	let post = mkCopy(activePost);
@@ -122,13 +122,13 @@ class Application extends React.Component { // A la ES6
 
     cancel() {
     	let {activePost, savedPosts, lastId} = this.state;
-    	let index = savedPosts.findIndex(p => p.id === activePost.id);
+    	let original = getPostById(activePost.id, savedPosts);
 
     	if(activePost.id > lastId) {
     		this.setState({editorOpen: false, activePost: savedPosts[0]})
     	} else {
     		// return to original
-    		this.setState({editorOpen: false, activePost: mkCopy(savedPosts[index])})
+    		this.setState({editorOpen: false, activePost: mkCopy(original)})
     	}
 	}
 
@@ -241,7 +241,6 @@ function mkCopy(object){
 	return JSON.parse(JSON.stringify(object));
 }
 
-// no longer used, but can be
 function getPostById(id, array) {
 	let index = array.findIndex(p => p.id === id);
 	if (index > -1) { 
