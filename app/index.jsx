@@ -9,6 +9,7 @@ class Application extends React.Component { // A la ES6
 		super(props);
 		this.state = {
 			editorOpen: false,
+			sidebarOpen: true,
 			savedPosts: [],
 			activePost: {title: "", content: "", id: 1},
 			lastId: 1
@@ -16,10 +17,13 @@ class Application extends React.Component { // A la ES6
 
 		// attempted ES7 autobinding but encountered build errors
 		this.updatePost = this.updatePost.bind(this);
+		this.updatePostList = this.updatePostList.bind(this);
+		this.duplicatePost = this.duplicatePost.bind(this);
 		this.openEditor = this.openEditor.bind(this);
+		this.toggleSidebar = this.toggleSidebar.bind(this);
 		this.savePost = this.savePost.bind(this);
 		this.cancel = this.cancel.bind(this);
-		this.discard = this.discard.bind(this);
+		this.removePost = this.removePost.bind(this);
 		this.setActivePost = this.setActivePost.bind(this);
 	}
 
@@ -52,6 +56,10 @@ class Application extends React.Component { // A la ES6
     	this.setState({activePost: activePost});
     }
 
+    toggleSidebar() {
+    	this.setState({sidebarOpen: !this.state.sidebarOpen})
+    }
+
     openEditor(isNew) {
     	if(isNew){
 	    	let lastId = this.state.lastId;
@@ -60,33 +68,37 @@ class Application extends React.Component { // A la ES6
     	this.setState({editorOpen: true})
     }
 
-    savePost() {
-    	let {activePost, savedPosts, lastId, editorOpen} = this.state;
-    	let newSavedPosts = savedPosts.slice();
-    	let original = this.getOriginalPost(activePost.id);
+    duplicatePost() {
+    	let {activePost, lastId} = this.state;
+    	let newPost = mkCopy(activePost);
+    	newPost.id = lastId + 1;
+    	newPost.title = '(copy) ' + newPost.title.replace('(copy) ', '');
+    	this.setState({activePost: newPost, editorOpen: true}, () => {
+	    	this.savePost(true);
+	    });
+    }
+
+    savePost(open_editor) {
+    	let {activePost, savedPosts, lastId} = this.state;
+    	let newSavedPosts = mkCopy(savedPosts); // instead of slice() for consistency
+    	let original = getPostById(activePost.id, newSavedPosts);
 
     	if(isDifferent(original, activePost)){  
 	    	let post = mkCopy(activePost);
 	    	post.updated_at = new Date();
-            
+
     		if(activePost.id > lastId) { // is new
 				this.setState({lastId: lastId + 1});
 			} else {
-				let index = savedPosts.indexOf(original);
-		        newSavedPosts.splice(index, 1);
+				newSavedPosts = this.removePost(activePost.id);
 			}
 
 			newSavedPosts.unshift(post);
-			this.setState({lastId: lastId + 1});
-
-	    	// update state and localstorage
-			this.setState({ savedPosts: newSavedPosts }, () => {
-				localStorage.savedPosts = JSON.stringify(this.state.savedPosts);
-				this.setState({editorOpen: false});
-			});
-
+            this.updatePostList(newSavedPosts);
+            if (!open_editor) this.setState({editorOpen: false});
+            
 		} else {
-			this.cancel()
+			this.cancel();
 		}
     }
 
@@ -95,71 +107,82 @@ class Application extends React.Component { // A la ES6
     	if(activePost.id > lastId) {
     		this.setState({editorOpen: false, activePost: savedPosts[0]})
     	} else {
-    		this.setState({editorOpen: false, activePost: this.getOriginalPost()})
+    		this.setState({editorOpen: false, activePost: getPostById(activePost.id, mkCopy(savedPosts))})
     	}
+	}
+
+	updatePostList(newSavedPosts, close_editor) {
+		// update state and localstorage
+		this.setState({ savedPosts: newSavedPosts }, () => {
+			localStorage.savedPosts = JSON.stringify(this.state.savedPosts);
+			if (close_editor) this.setState({editorOpen: false});
+			this.setActivePost(newSavedPosts[0].id)
+		});
 	}
 
 	// clearAll() {
 	// 	this.setState({ savedPosts: [] });
 	// 	localstorage.savedPosts = [];
-	// 	this.setState({activePost: {title: 'Create your first post', content: '', id: }});
+	// 	this.setState({activePost: {title: 'Create your first post', content: '', id: 1, lastId: 0}});
 	// 	this.openEditor(true);
 	// }
 
-	discard() {
+	removePost(id) {
 		const {activePost, savedPosts, lastId} = this.state;
-        if(activePost.id > lastId) {
+        if(id > lastId) {
 			this.cancel();
 		} else {
-			var newSavedPosts = savedPosts.slice();
-	        let post = getPostById(activePost.id, newSavedPosts);
+			// copy list, find post and remove it, update list
+			let newSavedPosts = mkCopy(savedPosts);
+	        let post = getPostById(id, newSavedPosts);
 	        let index = newSavedPosts.indexOf(post);
 	        newSavedPosts.splice(index, 1);
-			this.setState({ savedPosts: newSavedPosts }, () => {
-				localStorage.savedPosts = JSON.stringify(this.state.savedPosts);
-				this.setState({editorOpen: false});
-			});
+			this.updatePostList(newSavedPosts);
+			this.setState({editorOpen: false})
+			return newSavedPosts;
 		}
 	}
 
-	getOriginalPost(id) {
-		const {activePost, savedPosts, lastId} = this.state;
-    	var active_id = id || activePost.id;
-    	return getPostById(active_id, savedPosts) || {title: '', content: '', id: lastId + 1};	
-	}
+
 
 	render(){
-		const {savedPosts, activePost, editorOpen} = this.state;
+		const {savedPosts, activePost, editorOpen, sidebarOpen} = this.state;
 	    return ( // A la JSX
-	    	<div className="row"> 
+	    	<div className={"row " + (sidebarOpen ? 'sidebar-open' : 'sidebar-closed')}> 
 	    		<div className={"sidebar " + (editorOpen ? 'disabled' : 'enabled')}>
 	    			<PostList 
 	    				posts={savedPosts} 
 	    				activePost={activePost} 
 	    				setActivePost={this.setActivePost}
+	    				removePost={this.removePost}
 	    				/>
 	    		</div>
 	    		<div className="post">
+    				{editorOpen ? 
+			    		<Post 
+				    		activePost={activePost} 
+				    		updatePost={this.updatePost} 
+				    		savePost={this.savePost} 
+				    		newPost={this.newPost}
+				    		removePost={this.removePost}
+				    		cancel={this.cancel} /> 
+			    		:
+			    		<div className="post-actions">
+			    		    <button onClick={this.toggleSidebar} className={(sidebarOpen ? 'active' : '')}>
+					    		<i className="fa fa-bars" aria-hidden="true"></i>
+				    		</button>
+				    		<button onClick={()=> this.openEditor(true)} >
+					    		<i className="fa fa-file-text" aria-hidden="true"></i>
+				    		</button>
+				    		<button onClick={()=> this.openEditor(false)} >
+					    		<i className="fa fa-pencil" aria-hidden="true"></i>
+				    		</button>
+				    		<button onClick={this.duplicatePost}>
+					    		<i className="fa fa-clone" aria-hidden="true"></i>
+				    		</button>
+				    	</div>
+			    	}
 	    		    <div className="post-inner">
-				    	{editorOpen ? 
-				    		<Post 
-					    		activePost={activePost} 
-					    		updatePost={this.updatePost} 
-					    		savePost={this.savePost} 
-					    		newPost={this.newPost}
-					    		discard={this.discard}
-					    		cancel={this.cancel} /> 
-				    		:
-				    		<div className="post-actions">
-					    		<button onClick={()=> this.openEditor(true)} >
-						    		<i className="fa fa-file-text" aria-hidden="true"></i>
-					    		</button>
-					    		<button onClick={()=> this.openEditor(false)} >
-						    		<i className="fa fa-pencil" aria-hidden="true"></i>
-					    		</button>
-					    	</div>
-				    	}
-				    	
 				    	<Preview 
 				    		activePost={activePost}
 				    		/>
@@ -224,7 +247,7 @@ function getPostById(id, array) {
 	if (index > -1) { 
 		return array[index];  
 	} else {
-		return null
+		return {title: '', content: '', id: id}
 	} 	
 }
 

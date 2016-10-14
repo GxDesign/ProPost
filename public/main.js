@@ -88,6 +88,7 @@
 	
 			_this.state = {
 				editorOpen: false,
+				sidebarOpen: true,
 				savedPosts: [],
 				activePost: { title: "", content: "", id: 1 },
 				lastId: 1
@@ -95,10 +96,13 @@
 	
 			// attempted ES7 autobinding but encountered build errors
 			_this.updatePost = _this.updatePost.bind(_this);
+			_this.updatePostList = _this.updatePostList.bind(_this);
+			_this.duplicatePost = _this.duplicatePost.bind(_this);
 			_this.openEditor = _this.openEditor.bind(_this);
+			_this.toggleSidebar = _this.toggleSidebar.bind(_this);
 			_this.savePost = _this.savePost.bind(_this);
 			_this.cancel = _this.cancel.bind(_this);
-			_this.discard = _this.discard.bind(_this);
+			_this.removePost = _this.removePost.bind(_this);
 			_this.setActivePost = _this.setActivePost.bind(_this);
 			return _this;
 		}
@@ -160,6 +164,11 @@
 				this.setState({ activePost: activePost });
 			}
 		}, {
+			key: 'toggleSidebar',
+			value: function toggleSidebar() {
+				this.setState({ sidebarOpen: !this.state.sidebarOpen });
+			}
+		}, {
 			key: 'openEditor',
 			value: function openEditor(isNew) {
 				if (isNew) {
@@ -169,18 +178,31 @@
 				this.setState({ editorOpen: true });
 			}
 		}, {
-			key: 'savePost',
-			value: function savePost() {
+			key: 'duplicatePost',
+			value: function duplicatePost() {
 				var _this2 = this;
 	
 				var _state = this.state;
 				var activePost = _state.activePost;
-				var savedPosts = _state.savedPosts;
 				var lastId = _state.lastId;
-				var editorOpen = _state.editorOpen;
 	
-				var newSavedPosts = savedPosts.slice();
-				var original = this.getOriginalPost(activePost.id);
+				var newPost = mkCopy(activePost);
+				newPost.id = lastId + 1;
+				newPost.title = '(copy) ' + newPost.title.replace('(copy) ', '');
+				this.setState({ activePost: newPost, editorOpen: true }, function () {
+					_this2.savePost(true);
+				});
+			}
+		}, {
+			key: 'savePost',
+			value: function savePost(open_editor) {
+				var _state2 = this.state;
+				var activePost = _state2.activePost;
+				var savedPosts = _state2.savedPosts;
+				var lastId = _state2.lastId;
+	
+				var newSavedPosts = mkCopy(savedPosts); // instead of slice() for consistency
+				var original = getPostById(activePost.id, newSavedPosts);
 	
 				if (isDifferent(original, activePost)) {
 					var post = mkCopy(activePost);
@@ -190,18 +212,12 @@
 						// is new
 						this.setState({ lastId: lastId + 1 });
 					} else {
-						var index = savedPosts.indexOf(original);
-						newSavedPosts.splice(index, 1);
+						newSavedPosts = this.removePost(activePost.id);
 					}
 	
 					newSavedPosts.unshift(post);
-					this.setState({ lastId: lastId + 1 });
-	
-					// update state and localstorage
-					this.setState({ savedPosts: newSavedPosts }, function () {
-						localStorage.savedPosts = JSON.stringify(_this2.state.savedPosts);
-						_this2.setState({ editorOpen: false });
-					});
+					this.updatePostList(newSavedPosts);
+					if (!open_editor) this.setState({ editorOpen: false });
 				} else {
 					this.cancel();
 				}
@@ -209,58 +225,57 @@
 		}, {
 			key: 'cancel',
 			value: function cancel() {
-				var _state2 = this.state;
-				var activePost = _state2.activePost;
-				var savedPosts = _state2.savedPosts;
-				var lastId = _state2.lastId;
-	
-				if (activePost.id > lastId) {
-					this.setState({ editorOpen: false, activePost: savedPosts[0] });
-				} else {
-					this.setState({ editorOpen: false, activePost: this.getOriginalPost() });
-				}
-			}
-	
-			// clearAll() {
-			// 	this.setState({ savedPosts: [] });
-			// 	localstorage.savedPosts = [];
-			// 	this.setState({activePost: {title: 'Create your first post', content: '', id: }});
-			// 	this.openEditor(true);
-			// }
-	
-		}, {
-			key: 'discard',
-			value: function discard() {
-				var _this3 = this;
-	
 				var _state3 = this.state;
 				var activePost = _state3.activePost;
 				var savedPosts = _state3.savedPosts;
 				var lastId = _state3.lastId;
 	
 				if (activePost.id > lastId) {
-					this.cancel();
+					this.setState({ editorOpen: false, activePost: savedPosts[0] });
 				} else {
-					var newSavedPosts = savedPosts.slice();
-					var post = getPostById(activePost.id, newSavedPosts);
-					var index = newSavedPosts.indexOf(post);
-					newSavedPosts.splice(index, 1);
-					this.setState({ savedPosts: newSavedPosts }, function () {
-						localStorage.savedPosts = JSON.stringify(_this3.state.savedPosts);
-						_this3.setState({ editorOpen: false });
-					});
+					this.setState({ editorOpen: false, activePost: getPostById(activePost.id, mkCopy(savedPosts)) });
 				}
 			}
 		}, {
-			key: 'getOriginalPost',
-			value: function getOriginalPost(id) {
+			key: 'updatePostList',
+			value: function updatePostList(newSavedPosts, close_editor) {
+				var _this3 = this;
+	
+				// update state and localstorage
+				this.setState({ savedPosts: newSavedPosts }, function () {
+					localStorage.savedPosts = JSON.stringify(_this3.state.savedPosts);
+					if (close_editor) _this3.setState({ editorOpen: false });
+					_this3.setActivePost(newSavedPosts[0].id);
+				});
+			}
+	
+			// clearAll() {
+			// 	this.setState({ savedPosts: [] });
+			// 	localstorage.savedPosts = [];
+			// 	this.setState({activePost: {title: 'Create your first post', content: '', id: 1, lastId: 0}});
+			// 	this.openEditor(true);
+			// }
+	
+		}, {
+			key: 'removePost',
+			value: function removePost(id) {
 				var _state4 = this.state;
 				var activePost = _state4.activePost;
 				var savedPosts = _state4.savedPosts;
 				var lastId = _state4.lastId;
 	
-				var active_id = id || activePost.id;
-				return getPostById(active_id, savedPosts) || { title: '', content: '', id: lastId + 1 };
+				if (id > lastId) {
+					this.cancel();
+				} else {
+					// copy list, find post and remove it, update list
+					var newSavedPosts = mkCopy(savedPosts);
+					var post = getPostById(id, newSavedPosts);
+					var index = newSavedPosts.indexOf(post);
+					newSavedPosts.splice(index, 1);
+					this.updatePostList(newSavedPosts);
+					this.setState({ editorOpen: false });
+					return newSavedPosts;
+				}
 			}
 		}, {
 			key: 'render',
@@ -271,50 +286,62 @@
 				var savedPosts = _state5.savedPosts;
 				var activePost = _state5.activePost;
 				var editorOpen = _state5.editorOpen;
+				var sidebarOpen = _state5.sidebarOpen;
 	
 				return (// A la JSX
 					_react2.default.createElement(
 						'div',
-						{ className: 'row' },
+						{ className: "row " + (sidebarOpen ? 'sidebar-open' : 'sidebar-closed') },
 						_react2.default.createElement(
 							'div',
 							{ className: "sidebar " + (editorOpen ? 'disabled' : 'enabled') },
 							_react2.default.createElement(_PostList2.default, {
 								posts: savedPosts,
 								activePost: activePost,
-								setActivePost: this.setActivePost
+								setActivePost: this.setActivePost,
+								removePost: this.removePost
 							})
 						),
 						_react2.default.createElement(
 							'div',
 							{ className: 'post' },
+							editorOpen ? _react2.default.createElement(_Post2.default, {
+								activePost: activePost,
+								updatePost: this.updatePost,
+								savePost: this.savePost,
+								newPost: this.newPost,
+								removePost: this.removePost,
+								cancel: this.cancel }) : _react2.default.createElement(
+								'div',
+								{ className: 'post-actions' },
+								_react2.default.createElement(
+									'button',
+									{ onClick: this.toggleSidebar, className: sidebarOpen ? 'active' : '' },
+									_react2.default.createElement('i', { className: 'fa fa-bars', 'aria-hidden': 'true' })
+								),
+								_react2.default.createElement(
+									'button',
+									{ onClick: function onClick() {
+											return _this4.openEditor(true);
+										} },
+									_react2.default.createElement('i', { className: 'fa fa-file-text', 'aria-hidden': 'true' })
+								),
+								_react2.default.createElement(
+									'button',
+									{ onClick: function onClick() {
+											return _this4.openEditor(false);
+										} },
+									_react2.default.createElement('i', { className: 'fa fa-pencil', 'aria-hidden': 'true' })
+								),
+								_react2.default.createElement(
+									'button',
+									{ onClick: this.duplicatePost },
+									_react2.default.createElement('i', { className: 'fa fa-clone', 'aria-hidden': 'true' })
+								)
+							),
 							_react2.default.createElement(
 								'div',
 								{ className: 'post-inner' },
-								editorOpen ? _react2.default.createElement(_Post2.default, {
-									activePost: activePost,
-									updatePost: this.updatePost,
-									savePost: this.savePost,
-									newPost: this.newPost,
-									discard: this.discard,
-									cancel: this.cancel }) : _react2.default.createElement(
-									'div',
-									{ className: 'post-actions' },
-									_react2.default.createElement(
-										'button',
-										{ onClick: function onClick() {
-												return _this4.openEditor(true);
-											} },
-										_react2.default.createElement('i', { className: 'fa fa-file-text', 'aria-hidden': 'true' })
-									),
-									_react2.default.createElement(
-										'button',
-										{ onClick: function onClick() {
-												return _this4.openEditor(false);
-											} },
-										_react2.default.createElement('i', { className: 'fa fa-pencil', 'aria-hidden': 'true' })
-									)
-								),
 								_react2.default.createElement(_Preview2.default, {
 									activePost: activePost
 								})
@@ -381,7 +408,7 @@
 		if (index > -1) {
 			return array[index];
 		} else {
-			return null;
+			return { title: '', content: '', id: id };
 		}
 	}
 	
@@ -22324,7 +22351,7 @@
 	      var savePost = _props.savePost;
 	      var activePost = _props.activePost;
 	      var cancel = _props.cancel;
-	      var discard = _props.discard;
+	      var removePost = _props.removePost;
 	
 	      return _react2.default.createElement(
 	        'div',
@@ -22349,20 +22376,22 @@
 	            'button',
 	            {
 	              className: 'btn-success',
-	              onClick: savePost },
+	              onClick: function onClick() {
+	                return savePost(false);
+	              } },
 	            'Save'
 	          ),
 	          _react2.default.createElement(
 	            'button',
 	            {
-	              onClick: cancel.bind(activePost.id) },
+	              onClick: cancel.bind(this, activePost.id) },
 	            'Cancel'
 	          ),
 	          _react2.default.createElement(
 	            'button',
 	            {
 	              className: 'btn-danger',
-	              onClick: discard.bind(activePost.id) },
+	              onClick: removePost.bind(this, activePost.id) },
 	            'Discard'
 	          )
 	        )
@@ -30598,6 +30627,7 @@
 	      var _props = this.props;
 	      var posts = _props.posts;
 	      var activePost = _props.activePost;
+	      var removePost = _props.removePost;
 	
 	
 	      if (posts.length === 0) {
@@ -30623,6 +30653,11 @@
 	                'span',
 	                { className: 'postlist-item-title' },
 	                post.title
+	              ),
+	              _react2.default.createElement(
+	                'button',
+	                { onClick: removePost.bind(this, post.id) },
+	                _react2.default.createElement('i', { className: 'fa fa-close', 'aria-hidden': 'true' })
 	              ),
 	              _react2.default.createElement(_reactTimeago2.default, { className: 'time-ago', date: post.updated_at, minPeriod: '60' })
 	            );
