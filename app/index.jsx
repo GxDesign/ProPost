@@ -241,6 +241,7 @@ function mkCopy(object){
 	return JSON.parse(JSON.stringify(object));
 }
 
+// no longer used, but can be
 function getPostById(id, array) {
 	let index = array.findIndex(p => p.id === id);
 	if (index > -1) { 
