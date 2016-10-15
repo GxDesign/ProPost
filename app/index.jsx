@@ -40,6 +40,19 @@ class Application extends React.Component { // A la ES6
 		this.setState({savedPosts: savedPosts, lastId: savedPosts.length});
 		if(savedPosts.length) {
 			this.setState({activePost: savedPosts[0]});
+		} else {
+			this.setState({activePost: {
+				title: "Create Your First Post",
+				content: "## You can use Markdown for your content.\n" +
+						 "### You can use the action buttons above to\n" +
+						 "* Toggle the sidebar\n" +
+						 "* Create a new post\n" +
+						 "* Edit a post\n" +
+						 "* Duplicate a post\n\n" +
+                         "### Give it a whirl by clicking the edit (pencil) icon and editing this post!\n" +
+                         ">> The function of good software is to make the complex appear to be simple.\n\n\n" +
+                         "---\n> > *“The function of good software is to make the complex appear to be simple.”* \n -Grady Booch\n"
+			}})
 		}
 	}
 

@@ -9,7 +9,7 @@ class Post extends React.Component {
 
   updatePost(event) {
     let field = event.target.id;
-    let value = event.target.value.substr(0, 300);
+    let value = event.target.value.substr(0, 700); // 300 was too small to fit my quote
     this.props.updatePost(field, value);
   }
 
