@@ -90,7 +90,7 @@
 				editorOpen: false,
 				sidebarOpen: true,
 				savedPosts: [],
-				activePost: { title: "", content: "", id: 1 },
+				activePost: { title: "", content: "", id: 0 },
 				lastId: 0
 			};
 	
@@ -152,7 +152,7 @@
 		}, {
 			key: 'setDefaultPost',
 			value: function setDefaultPost() {
-				this.setState({ activePost: {
+				this.setState({ lastId: 0, activePost: {
 						title: "Create Your First Post",
 						content: "## You can use Markdown for your content.\n" + "### You can use the action buttons above to\n" + "* Toggle the sidebar\n" + "* Create a new post\n" + "* Edit a post\n" + "* Duplicate a post\n\n" + "### Give it a whirl by clicking the edit (pencil) icon, editing this post and saving it!\n" + "---\n> > *“The function of good software is to make the complex appear to be simple.”* \n -Grady Booch\n",
 						id: 0
@@ -266,13 +266,15 @@
 				var savedPosts = _state4.savedPosts;
 				var lastId = _state4.lastId;
 	
-				var original = getPostById(activePost.id, savedPosts);
 	
-				if (activePost.id > lastId) {
-					this.setState({ activePost: savedPosts[0] });
-				} else if (savedPosts.length) {
-					// return to original
-					this.setState({ activePost: mkCopy(original) });
+				if (savedPosts.length) {
+					var original = getPostById(activePost.id, savedPosts);
+					if (activePost.id > lastId) {
+						this.setState({ activePost: savedPosts[0] });
+					} else {
+						// return to original
+						this.setState({ activePost: mkCopy(original) });
+					}
 				} else {
 					this.setDefaultPost();
 				}

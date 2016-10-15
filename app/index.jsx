@@ -11,7 +11,7 @@ class Application extends React.Component { // A la ES6
 			editorOpen: false,
 			sidebarOpen: true,
 			savedPosts: [],
-			activePost: {title: "", content: "", id: 1},
+			activePost: {title: "", content: "", id: 0},
 			lastId: 0
 		};
 
@@ -47,7 +47,7 @@ class Application extends React.Component { // A la ES6
 	}
 
 	setDefaultPost() {
-		this.setState({activePost: {
+		this.setState({lastId: 0, activePost: {
 			title: "Create Your First Post",
 			content: "## You can use Markdown for your content.\n" +
 					 "### You can use the action buttons above to\n" +
@@ -142,13 +142,15 @@ class Application extends React.Component { // A la ES6
 
     cancel() {
     	let {activePost, savedPosts, lastId} = this.state;
-    	let original = getPostById(activePost.id, savedPosts);
-
-    	if(activePost.id > lastId) {
-    		this.setState({activePost: savedPosts[0]})
-    	} else if(savedPosts.length) {
-    		// return to original
-    		this.setState({activePost: mkCopy(original)})
+    	
+    	if(savedPosts.length){
+    		let original = getPostById(activePost.id, savedPosts);
+	    	if(activePost.id > lastId) {
+	    		this.setState({activePost: savedPosts[0]})
+	    	} else {
+	    		// return to original
+	    		this.setState({activePost: mkCopy(original)})
+	    	}
     	} else {
     		this.setDefaultPost();
     	}
@@ -270,7 +272,7 @@ function getPostById(id, array) {
 		return array[index];  
 	} else {
 		return {title: '', content: '', id: id}
-	} 	
+	} 
 }
 
 
