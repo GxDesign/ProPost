@@ -22408,7 +22408,7 @@
 	          _react2.default.createElement(
 	            'button',
 	            {
-	              className: "btn-danger " + (activePost.id > lastId ? 'disabled' : ''),
+	              className: "btn-danger " + (activePost.id > lastId || activePost.id === 0 ? 'disabled' : ''),
 	              onClick: function onClick() {
 	                return removePost(activePost.id);
 	              } },

@@ -43,7 +43,7 @@ class Post extends React.Component {
               Cancel 
               </button>
             <button 
-              className={"btn-danger " + (activePost.id > lastId ? 'disabled': '')}
+              className={"btn-danger " + (activePost.id > lastId || activePost.id === 0? 'disabled': '')}
               onClick={()=> removePost(activePost.id)} >
               Discard 
               </button>
