@@ -12,10 +12,11 @@ class Application extends React.Component { // A la ES6
 			sidebarOpen: true,
 			savedPosts: [],
 			activePost: {title: "", content: "", id: 1},
-			lastId: 1
+			lastId: 0
 		};
 
 		// attempted ES7 autobinding but encountered build errors
+		this.setDefaultPost = this.setDefaultPost.bind(this);
 		this.updatePost = this.updatePost.bind(this);
 		this.updatePostList = this.updatePostList.bind(this);
 		this.duplicatePost = this.duplicatePost.bind(this);
@@ -41,19 +42,23 @@ class Application extends React.Component { // A la ES6
 		if(savedPosts.length) {
 			this.setState({activePost: savedPosts[0]});
 		} else {
-			this.setState({activePost: {
-				title: "Create Your First Post",
-				content: "## You can use Markdown for your content.\n" +
-						 "### You can use the action buttons above to\n" +
-						 "* Toggle the sidebar\n" +
-						 "* Create a new post\n" +
-						 "* Edit a post\n" +
-						 "* Duplicate a post\n\n" +
-                         "### Give it a whirl by clicking the edit (pencil) icon and editing this post!\n" +
-                         ">> The function of good software is to make the complex appear to be simple.\n\n\n" +
-                         "---\n> > *“The function of good software is to make the complex appear to be simple.”* \n -Grady Booch\n"
-			}})
+			this.setDefaultPost();
 		}
+	}
+
+	setDefaultPost() {
+		this.setState({activePost: {
+			title: "Create Your First Post",
+			content: "## You can use Markdown for your content.\n" +
+					 "### You can use the action buttons above to\n" +
+					 "* Toggle the sidebar\n" +
+					 "* Create a new post\n" +
+					 "* Edit a post\n" +
+					 "* Duplicate a post\n\n" +
+	                 "### Give it a whirl by clicking the edit (pencil) icon, editing this post and saving it!\n" +
+	                 "---\n> > *“The function of good software is to make the complex appear to be simple.”* \n -Grady Booch\n",
+			id: 1
+		}});
 	}
 
     setActivePost(id) {
@@ -72,7 +77,7 @@ class Application extends React.Component { // A la ES6
     }
 
     updatePost(field, value) {
-    	var updated = this.state.activePost;
+    	var updated = mkCopy(this.state.activePost);
     	updated[field] = value;
     	this.setState({activePost: updated});
     }
@@ -98,7 +103,7 @@ class Application extends React.Component { // A la ES6
 		const {activePost, savedPosts, lastId} = this.state;
         if(id > lastId) {
 			this.cancel();
-		} else {
+		} else if(savedPosts.length){
 			// copy list, find post and remove it, update list
 			let newSavedPosts = mkCopy(savedPosts);
 	        let index = newSavedPosts.findIndex(p => p.id === id);
@@ -106,7 +111,9 @@ class Application extends React.Component { // A la ES6
 			this.updatePostList(newSavedPosts);
 			this.setState({editorOpen: false})
 			return newSavedPosts;
-		}
+		} else {
+    		this.setDefaultPost();
+    	}
 	}
 
     savePost(open_editor) {
@@ -139,9 +146,11 @@ class Application extends React.Component { // A la ES6
 
     	if(activePost.id > lastId) {
     		this.setState({editorOpen: false, activePost: savedPosts[0]})
-    	} else {
+    	} else if(savedPosts.length) {
     		// return to original
     		this.setState({editorOpen: false, activePost: mkCopy(original)})
+    	} else {
+    		this.setDefaultPost();
     	}
 	}
 
@@ -150,7 +159,7 @@ class Application extends React.Component { // A la ES6
 		this.setState({ savedPosts: newSavedPosts }, () => {
 			localStorage.savedPosts = JSON.stringify(this.state.savedPosts);
 			if (close_editor) this.setState({editorOpen: false});
-			this.setActivePost(newSavedPosts[0].id)
+			newSavedPosts.length ? this.setActivePost(newSavedPosts[0].id) : this.setDefaultPost();
 		});
 	}
 
