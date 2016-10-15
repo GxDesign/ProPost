@@ -55,7 +55,7 @@ class Application extends React.Component { // A la ES6
 					 "* Create a new post\n" +
 					 "* Edit a post\n" +
 					 "* Duplicate a post\n\n" +
-	                 "### Give it a whirl by clicking the edit (pencil) icon, editing this post and saving it!\n" +
+	                 "### Give it a whirl by clicking the edit (pencil) icon, editing this post and saving it, or simply create a new one!\n" +
 	                 "---\n> > *“The function of good software is to make the complex appear to be simple.”* \n -Grady Booch\n",
 			id: 0
 		}});
