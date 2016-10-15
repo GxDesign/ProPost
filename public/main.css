@@ -48,7 +48,7 @@ h1, h2, h3, li, button, .postlist-item-title {
 	pointer-events: none;
 }
 
-.sidebar.disabled {
+.sidebar.disabled, .post-actions button.disabled {
 	opacity: 0.5;
 }
 
@@ -193,6 +193,7 @@ h1, h2, h3, li, button, .postlist-item-title {
     color: #fff;
     margin-left: 25px;
 }
+
 
 .post-editor-actions {
 	text-align: right;

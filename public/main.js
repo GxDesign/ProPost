@@ -112,7 +112,7 @@
 			key: 'componentWillMount',
 			value: function componentWillMount() {
 				var savedPosts = this.props.savedPosts;
-				var id = 1;
+				var id = 0;
 	
 				// IDs will allow us to index into the savedPosts array to compare changes
 				// to the active post before saving. We can reset them on load as they're only used
@@ -155,7 +155,7 @@
 				this.setState({ activePost: {
 						title: "Create Your First Post",
 						content: "## You can use Markdown for your content.\n" + "### You can use the action buttons above to\n" + "* Toggle the sidebar\n" + "* Create a new post\n" + "* Edit a post\n" + "* Duplicate a post\n\n" + "### Give it a whirl by clicking the edit (pencil) icon, editing this post and saving it!\n" + "---\n> > *“The function of good software is to make the complex appear to be simple.”* \n -Grady Booch\n",
-						id: 1
+						id: 0
 					} });
 			}
 		}, {
@@ -213,7 +213,7 @@
 				var savedPosts = _state2.savedPosts;
 				var lastId = _state2.lastId;
 	
-				if (id > lastId) {
+				if (id > lastId || !savedPosts.length) {
 					this.cancel();
 				} else if (savedPosts.length) {
 					// copy list, find post and remove it, update list
@@ -247,7 +247,7 @@
 					if (activePost.id > lastId) {
 						// is new
 						this.setState({ lastId: lastId + 1 });
-					} else {
+					} else if (savedPosts.length) {
 						newSavedPosts = this.removePost(activePost.id);
 					}
 	
@@ -269,13 +269,14 @@
 				var original = getPostById(activePost.id, savedPosts);
 	
 				if (activePost.id > lastId) {
-					this.setState({ editorOpen: false, activePost: savedPosts[0] });
+					this.setState({ activePost: savedPosts[0] });
 				} else if (savedPosts.length) {
 					// return to original
-					this.setState({ editorOpen: false, activePost: mkCopy(original) });
+					this.setState({ activePost: mkCopy(original) });
 				} else {
 					this.setDefaultPost();
 				}
+				this.setState({ editorOpen: false });
 			}
 		}, {
 			key: 'updatePostList',
@@ -349,7 +350,7 @@
 								),
 								_react2.default.createElement(
 									'button',
-									{ onClick: this.duplicatePost },
+									{ onClick: this.duplicatePost, className: !savedPosts.length ? 'disabled' : '' },
 									_react2.default.createElement('i', { className: 'fa fa-clone', 'aria-hidden': 'true' })
 								)
 							),
